@@ -1,0 +1,132 @@
+/* Ajustes de legibilidad: conserva el diseño, pero evita textos diminutos. */
+.step,
+.field-label,
+.language-tag,
+.shape-tag,
+.secure-note,
+.auth-status,
+.demo-hint,
+.result-badge,
+.micro-label,
+.matrix-dims,
+.powered-by,
+.stat-label,
+.diagonal-pill,
+.eyebrow,
+.service-status,
+.topbar-caption {
+  font-size: 10px;
+}
+
+.field-label span,
+.inline-error,
+.demo-hint,
+.login-dialog p,
+.login-dialog input,
+.text-button {
+  font-size: 12px;
+}
+
+.input-panel textarea {
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.matrix-cell {
+  min-width: 46px;
+  padding: 5px 3px;
+  font-size: 12px;
+}
+
+.matrix-cells {
+  gap: 8px 11px;
+}
+
+.stat-card {
+  padding: 15px 14px 12px;
+}
+
+.stat-card strong {
+  font-size: 23px;
+}
+
+.stat-foot {
+  font-size: 9px;
+}
+
+.diagonal-status b {
+  font-size: 12px;
+}
+
+.diagonal-status small,
+.empty-state p {
+  font-size: 12px;
+}
+
+footer {
+  font-size: 9px;
+}
+
+@media (max-width: 680px) {
+  .step,
+  .field-label,
+  .language-tag,
+  .shape-tag,
+  .secure-note,
+  .auth-status,
+  .demo-hint,
+  .result-badge,
+  .micro-label,
+  .matrix-dims,
+  .powered-by,
+  .stat-label,
+  .diagonal-pill {
+    font-size: 10px;
+  }
+
+  .matrix-cell {
+    font-size: 12px;
+  }
+
+  .stat-card strong {
+    font-size: 21px;
+  }
+
+  footer {
+    font-size: 9px;
+  }
+}
+
+.logout-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid rgba(190, 172, 255, .5);
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: linear-gradient(110deg, rgba(169, 149, 255, .22), rgba(137, 117, 212, .13));
+  color: #e7deff;
+  font: 600 12px Manrope, sans-serif;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+.logout-button span {
+  color: #c6b5ff;
+  font-size: 15px;
+}
+
+.logout-button:hover {
+  transform: translateY(-1px);
+  border-color: #c4b4ff;
+  background: linear-gradient(110deg, rgba(169, 149, 255, .38), rgba(137, 117, 212, .25));
+}
+
+.logout-button:focus-visible {
+  outline: 2px solid #c4b4ff;
+  outline-offset: 3px;
+}
+
+.shell {
+  padding-bottom: 28px;
+}

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#101321" />
+    <meta name="description" content="Rotación y factorización QR de matrices con estadísticas en tiempo real." />
+    <title>MatrixLab — QR Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/readability.css" />
+    <script src="/config.js"></script>
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+    <main id="app-shell" class="shell hidden">
+      <header class="topbar">
+        <a class="brand" href="#"><span class="brand-mark">M</span><span>matrix<span class="brand-light">lab</span></span></a>
+        <button id="logout-button" class="logout-button hidden" type="button">Cerrar sesión <span aria-hidden="true">↗</span></button>
+      </header>
+
+      <section class="hero">
+        <div class="eyebrow"><span>LABORATORIO NUMÉRICO</span><span class="eyebrow-line"></span><span>GO × NODE</span></div>
+        <h1>Las matrices,<br /><span>en otra dimensión.</span></h1>
+        <p class="hero-copy">Rota, factoriza y descubre lo que esconden tus datos.<br />Dos servicios. Un resultado, sin perder el hilo.</p>
+      </section>
+
+      <section class="workspace">
+        <div class="input-panel panel">
+          <div class="panel-heading"><div><span class="step">01 / ENTRADA</span><h2>Tu matriz</h2></div><span class="language-tag">JSON</span></div>
+          <label class="field-label" for="matrix-input">MATRIZ DE NÚMEROS <span>m ≥ n para QR</span></label>
+          <textarea id="matrix-input" spellcheck="false" aria-label="Matriz JSON">[[12, -51, 4], [6, 167, -68], [-4, 24, -41]]</textarea>
+          <div id="matrix-error" class="inline-error" role="alert"></div>
+          <div class="panel-actions"><button id="reset-button" class="text-button" type="button">↺ <span>Restaurar ejemplo</span></button><span id="matrix-shape" class="shape-tag">3 × 3</span></div>
+          <button id="analyze-button" class="primary-button" type="button"><span>Analizar matriz</span><span class="button-arrow">↗</span></button>
+        </div>
+
+        <div class="results-column">
+          <div class="results-heading"><div><span class="step">02 / RESULTADOS</span><h2>Lectura de datos</h2></div><span id="result-badge" class="result-badge">ESPERANDO MATRIZ</span></div>
+          <div id="empty-state" class="empty-state panel"><div class="empty-glyph">⟲</div><h3>Todo empieza con una matriz.</h3><p>Introduce datos y ejecuta el análisis<br />para ver aparecer las transformaciones.</p><div class="empty-decoration">Q · R · Σ</div></div>
+          <div id="results" class="results hidden">
+            <section class="panel rotation-panel"><div class="result-title"><div><span class="result-icon rotation-icon">↻</span><div><span class="step">TRANSFORMACIÓN</span><h3>Rotación · 90°</h3></div></div><span class="micro-label">SENTIDO HORARIO</span></div><div id="rotated-matrix" class="matrix-grid"></div></section>
+            <section class="factor-grid">
+              <div class="panel factor-panel"><div class="result-title"><div><span class="result-icon q-icon">Q</span><div><span class="step">FACTOR ORTOGONAL</span><h3>Matriz Q</h3></div></div><span class="matrix-dims" id="q-dims"></span></div><div id="q-matrix" class="matrix-grid"></div></div>
+              <div class="panel factor-panel"><div class="result-title"><div><span class="result-icon r-icon">R</span><div><span class="step">FACTOR TRIANGULAR</span><h3>Matriz R</h3></div></div><span class="matrix-dims" id="r-dims"></span></div><div id="r-matrix" class="matrix-grid"></div></div>
+            </section>
+            <section class="stats-section"><div class="stats-heading"><div><span class="step">03 / INSIGHTS</span><h2>Estadísticas adicionales</h2></div><span class="powered-by"><i></i> PROCESADO POR NODE.JS</span></div><div id="stats-cards" class="stats-grid"></div><div id="diagonal-status" class="diagonal-status"></div></section>
+          </div>
+        </div>
+      </section>
+    </main>
+    <dialog id="login-dialog" class="login-dialog"><form id="login-form" method="dialog"><span class="step">ACCESO SEGURO</span><h2>Inicia sesión</h2><p>Autentícate para acceder al análisis de matrices.</p><label for="username">USUARIO</label><input id="username" name="username" autocomplete="username" required /><label for="password">CONTRASEÑA</label><input id="password" name="password" type="password" autocomplete="current-password" required /><div id="login-error" class="inline-error" role="alert"></div><button class="primary-button" type="submit"><span>Ingresar</span><span class="button-arrow">↗</span></button></form></dialog>
+  </body>
+</html>

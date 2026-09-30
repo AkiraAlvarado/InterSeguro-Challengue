@@ -1,0 +1,53 @@
+services:
+  node-api:
+    build:
+      context: ./node-api
+    environment:
+      PORT: 3000
+      NODE_ENV: ${NODE_ENV:-development}
+      JWT_SECRET: ${JWT_SECRET:-}
+      AUTH_USERNAME: ${AUTH_USERNAME:-}
+      AUTH_PASSWORD_HASH: ${AUTH_PASSWORD_HASH:-}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    ports:
+      - "${NODE_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
+  go-api:
+    build:
+      context: ./go-api
+    environment:
+      PORT: 8080
+      STATISTICS_API_URL: http://node-api:3000
+      APP_ENV: ${APP_ENV:-development}
+      JWT_SECRET: ${JWT_SECRET:-}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-}
+    ports:
+      - "${GO_PORT:-8080}:8080"
+    depends_on:
+      node-api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      PORT: 5173
+      GO_API_URL: http://localhost:${GO_PORT:-8080}
+      NODE_API_URL: http://localhost:${NODE_PORT:-3000}
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    depends_on:
+      go-api:
+        condition: service_started
+      node-api:
+        condition: service_healthy
+    restart: unless-stopped
