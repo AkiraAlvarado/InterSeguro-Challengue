@@ -31,10 +31,7 @@ services:
       - key: APP_ENV
         value: production
       - key: STATISTICS_API_URL
-        fromService:
-          name: interseguro-challengue-node-api
-          type: web
-          property: hostport
+        value: https://interseguro-challengue-node-api.onrender.com
 
   - type: web
     name: interseguro-challengue-ui
@@ -47,15 +44,9 @@ services:
     autoDeployTrigger: commit
     envVars:
       - key: GO_API_URL
-        fromService:
-          name: interseguro-challengue-go-api
-          type: web
-          property: hostport
+        value: https://interseguro-challengue-go-api.onrender.com
       - key: NODE_API_URL
-        fromService:
-          name: interseguro-challengue-node-api
-          type: web
-          property: hostport
+        value: https://interseguro-challengue-node-api.onrender.com
 
 envVarGroups:
   - name: interseguro-challengue-secrets

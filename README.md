@@ -49,7 +49,7 @@ Se puede copiar `.env.example` a `.env` y cambiar puertos y usuario. El ejemplo 
 node --input-type=module -e "import {randomBytes,scryptSync} from 'node:crypto'; const salt=randomBytes(16).toString('hex'); console.log('scrypt:'+salt+':'+scryptSync('TU_CLAVE',salt,64).toString('hex'))"
 ```
 
-En producción establece `NODE_ENV=production` y `APP_ENV=production`, usa un secreto aleatorio de al menos 32 bytes, `FRONTEND_ORIGIN` HTTPS, usuario/hash scrypt propios y `COOKIE_SECURE=true`. Ambos backends fallan al arrancar si falta esa configuración. Guarda los secretos en un gestor dedicado. Las APIs se comunican dentro de Compose mediante `http://node-api:3000`; no se debe usar `localhost` entre contenedores. El frontend usa `localhost` para alcanzar los puertos publicados desde el navegador.
+En producción establece `NODE_ENV=production` y `APP_ENV=production`, usa un secreto aleatorio de al menos 32 bytes, `FRONTEND_ORIGIN` HTTPS, usuario/hash scrypt propios y `COOKIE_SECURE=true`. Ambos backends fallan al arrancar si falta esa configuración. Guarda los secretos en un gestor dedicado. En Compose, Go se comunica con Node mediante `http://node-api:3000`; el frontend usa el proxy same-origin. En Render Free, las llamadas entre servicios usan HTTPS público porque los servicios gratuitos no aceptan conexiones privadas entrantes.
 
 ## Ejecutar sin Docker
 
@@ -118,7 +118,7 @@ El archivo `render.yaml` define los tres servicios Docker y configura el enlace 
 4. Espera a que los tres servicios indiquen **Live**. La URL del frontend será `https://interseguro-challengue-ui.onrender.com`; verifica allí el login y un análisis.
 5. Comparte la URL y las credenciales temporales con el evaluador por un canal privado; no las guardes en GitHub.
 
-Render genera `JWT_SECRET`; el mismo grupo de variables lo entrega a ambos backends. El frontend actúa como proxy same-origin y reenvía cookie y `Origin`, mientras Go llama a Node por la red privada. Los servicios API siguen autenticando sus rutas aunque Render les asigne URL pública. El plan gratuito puede suspender servicios inactivos y tardar en responder al primer acceso; verifica el precio/condiciones actuales de Render antes de desplegar.
+Render genera `JWT_SECRET`; el mismo grupo de variables lo entrega a ambos backends. El frontend actúa como proxy same-origin y reenvía cookie y `Origin`; los saltos backend usan HTTPS público porque los servicios web Free no aceptan conexiones entrantes por la red privada. Las rutas API siguen autenticadas aunque tengan URL pública. El plan gratuito puede suspender servicios inactivos y tardar en responder al primer acceso; verifica las condiciones actuales de Render.
 
 También se puede desplegar en otra nube con las tres imágenes Docker; para producción, limita el acceso público de las APIs y permite solo tráfico interno desde el frontend/backend según la arquitectura del proveedor.
 
