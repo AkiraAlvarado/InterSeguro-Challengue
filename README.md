@@ -38,6 +38,7 @@ docker compose up --build
 - Frontend: http://localhost:5173
 - Go API: http://localhost:8080
 - Node API: http://localhost:3000
+- El navegador usa rutas del frontend (`/api/go` y `/api/node`), que reenvía las llamadas a los servicios; así la cookie HttpOnly permanece en el mismo origen.
 - Acceso local de demostración: usuario `demo`, contraseña `demo-password` (no usar en producción).
 - Estado de Go: `GET /health`
 - Estado de Node: `GET /health`
@@ -107,8 +108,18 @@ Errores: `401` si falta o es inválida la sesión; `400` para JSON/matrices inv�
 - Node: `cd node-api && npm test` — estadísticas/suma estable, detección diagonal, firma/verificación JWT, scrypt, cookies, endpoint HTTP y configuración de producción válida/insegura. Cobertura: `npm test -- --experimental-test-coverage`.
 - Docker ejecuta `go test ./...` durante la construcción de la imagen Go.
 
-## Despliegue en nube
+## Despliegue público en Render
 
-Las imágenes son independientes y listas para publicar en cualquier registro de contenedores. Por ejemplo, en Google Cloud Run se despliega cada imagen como un servicio; se configura `STATISTICS_API_URL` en Go con la URL privada/accesible del servicio Node (preferiblemente con ingress privado), y se expone públicamente solo Go. En AWS se puede usar ECS/Fargate con Cloud Map o un balanceador interno para la comunicación. Se requieren cuenta, permisos, registro y configuración de red del equipo; no se despliega automáticamente desde este repositorio.
+El archivo `render.yaml` define los tres servicios Docker y configura el enlace privado Node → Go. Para publicar:
+
+1. En Render, crea un **Blueprint** nuevo y conecta el repositorio `AkiraAlvarado/InterSeguro-Challengue` en la rama `main`.
+2. Render leerá `render.yaml`. En la primera creación, proporciona `AUTH_USERNAME` y `AUTH_PASSWORD_HASH`; crea el hash con el comando de scrypt de la sección anterior. No introduzcas la contraseña como valor de `AUTH_PASSWORD_HASH`.
+3. Confirma que el frontend tenga el subdominio `interseguro-challengue-ui.onrender.com`. Si Render asigna otro, actualiza `FRONTEND_ORIGIN` en el grupo `interseguro-challengue-secrets` con `https://` y redeploya Node y Go.
+4. Espera a que los tres servicios indiquen **Live**. La URL del frontend será `https://interseguro-challengue-ui.onrender.com`; verifica allí el login y un análisis.
+5. Comparte la URL y las credenciales temporales con el evaluador por un canal privado; no las guardes en GitHub.
+
+Render genera `JWT_SECRET`; el mismo grupo de variables lo entrega a ambos backends. El frontend actúa como proxy same-origin y reenvía cookie y `Origin`, mientras Go llama a Node por la red privada. Los servicios API siguen autenticando sus rutas aunque Render les asigne URL pública. El plan gratuito puede suspender servicios inactivos y tardar en responder al primer acceso; verifica el precio/condiciones actuales de Render antes de desplegar.
+
+También se puede desplegar en otra nube con las tres imágenes Docker; para producción, limita el acceso público de las APIs y permite solo tráfico interno desde el frontend/backend según la arquitectura del proveedor.
 
 Para despliegue público, usa TLS y `COOKIE_SECURE=true`, reemplaza el usuario/hash demo y `JWT_SECRET`, guarda los secretos en un gestor y restringe CORS al dominio real del frontend. El login se limita a 10 intentos cada 15 minutos por IP; el contador actual es en memoria por instancia, así que con varias réplicas se necesita un almacén compartido. La cuenta demo es solo para ejecución local. HttpOnly reduce la exposición del token frente a XSS, pero no sustituye la prevención de XSS, CSRF, controles de acceso ni TLS.

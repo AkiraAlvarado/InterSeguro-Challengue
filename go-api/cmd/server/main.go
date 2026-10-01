@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -20,6 +21,9 @@ import (
 func main() {
 	port := envOr("PORT", "8080")
 	statisticsURL := envOr("STATISTICS_API_URL", "http://node-api:3000")
+	if parsedURL, err := url.Parse(statisticsURL); err == nil && parsedURL.Scheme == "" {
+		statisticsURL = "http://" + statisticsURL
+	}
 	appEnvironment := envOr("APP_ENV", "development")
 	jwtSecret := os.Getenv("JWT_SECRET")
 	frontendOrigin := os.Getenv("FRONTEND_ORIGIN")

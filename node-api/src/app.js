@@ -46,7 +46,15 @@ app.get('/health', (_request, response) => {
   response.json({ status: 'ok', service: 'node-api' });
 });
 
-app.post('/api/auth/token', loginLimiter, (request, response) => {
+function requireTrustedOrigin(request, response, next) {
+  const origin = request.get('origin');
+  if ((isProduction && origin !== frontendOrigin) || (origin && origin !== frontendOrigin)) {
+    return response.status(403).json({ error: 'origen de solicitud no permitido' });
+  }
+  return next();
+}
+
+app.post('/api/auth/token', requireTrustedOrigin, loginLimiter, (request, response) => {
   const { username, password } = request.body ?? {};
   const userMatches = typeof username === 'string' && username === demoUsername;
   const passwordMatches = verifyPassword(password, demoPasswordHash);
@@ -58,7 +66,7 @@ app.post('/api/auth/token', loginLimiter, (request, response) => {
     .json({ authenticated: true, expiresIn: 3600 });
 });
 
-app.post('/api/auth/logout', (_request, response) => {
+app.post('/api/auth/logout', requireTrustedOrigin, (_request, response) => {
   return response.clearCookie('matrixlab_token', { httpOnly: true, secure: cookieSecure, sameSite: 'strict', path: '/' })
     .json({ authenticated: false });
 });

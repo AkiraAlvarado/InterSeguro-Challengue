@@ -1,0 +1,72 @@
+# Blueprint para desplegar frontend y APIs como servicios Docker en Render.
+# El frontend actúa como proxy same-origin para proteger la cookie HttpOnly.
+services:
+  - type: web
+    name: interseguro-challengue-node-api
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./node-api/Dockerfile
+    dockerContext: ./node-api
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - fromGroup: interseguro-challengue-secrets
+      - key: NODE_ENV
+        value: production
+      - key: COOKIE_SECURE
+        value: "true"
+
+  - type: web
+    name: interseguro-challengue-go-api
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./go-api/Dockerfile
+    dockerContext: ./go-api
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - fromGroup: interseguro-challengue-secrets
+      - key: APP_ENV
+        value: production
+      - key: STATISTICS_API_URL
+        fromService:
+          name: interseguro-challengue-node-api
+          type: web
+          property: hostport
+
+  - type: web
+    name: interseguro-challengue-ui
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: GO_API_URL
+        fromService:
+          name: interseguro-challengue-go-api
+          type: web
+          property: hostport
+      - key: NODE_API_URL
+        fromService:
+          name: interseguro-challengue-node-api
+          type: web
+          property: hostport
+
+envVarGroups:
+  - name: interseguro-challengue-secrets
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: AUTH_USERNAME
+        sync: false
+      - key: AUTH_PASSWORD_HASH
+        sync: false
+      # Render subdomain correspondiente al servicio interseguro-challengue-ui.
+      # Si Render asigna otro hostname, actualiza esta variable en el grupo.
+      - key: FRONTEND_ORIGIN
+        value: https://interseguro-challengue-ui.onrender.com

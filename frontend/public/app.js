@@ -1,4 +1,6 @@
-const config = window.APP_CONFIG ?? { goApiUrl: 'http://localhost:8080', nodeApiUrl: 'http://localhost:3000' };
+// Las llamadas pasan por el servidor del frontend para mantener API y cookie en el mismo origen.
+const nodeApiURL = '/api/node';
+const goApiURL = '/api/go';
 const example = [[12, -51, 4], [6, 167, -68], [-4, 24, -41]];
 const elements = Object.fromEntries(['app-shell', 'matrix-input', 'matrix-error', 'matrix-shape', 'reset-button', 'analyze-button', 'logout-button', 'result-badge', 'empty-state', 'results', 'rotated-matrix', 'q-matrix', 'r-matrix', 'q-dims', 'r-dims', 'stats-cards', 'diagonal-status', 'login-dialog', 'login-form', 'login-error', 'username', 'password'].map((id) => [id, document.getElementById(id)]));
 let authenticated = false;
@@ -64,7 +66,7 @@ function showResults(data) {
 
 async function login() {
   // La API escribe el JWT en una cookie HttpOnly; JavaScript nunca recibe ni persiste el token.
-  const response = await fetch(`${config.nodeApiUrl}/api/auth/token`, {
+  const response = await fetch(`${nodeApiURL}/api/auth/token`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username: elements.username.value.trim(), password: elements.password.value }),
     credentials: 'include',
@@ -87,7 +89,7 @@ async function analyze(matrix) {
   elements['analyze-button'].querySelector('span').textContent = 'Calculando QR + estadísticas…';
   elements['result-badge'].textContent = 'PROCESANDO';
   try {
-    const response = await fetch(`${config.goApiUrl}/api/qr`, {
+    const response = await fetch(`${goApiURL}/api/qr`, {
       // El navegador envía la cookie automáticamente; no se lee el JWT desde el cliente.
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
       body: JSON.stringify({ matrix }),
@@ -119,7 +121,7 @@ function setAuthenticated(value) {
 
 async function restoreSession() {
   try {
-    const response = await fetch(`${config.goApiUrl}/api/session`, { credentials: 'include' });
+    const response = await fetch(`${goApiURL}/api/session`, { credentials: 'same-origin' });
     if (response.ok) setAuthenticated(true);
     else if (!authenticated) setAuthenticated(false);
   } catch {
@@ -129,7 +131,7 @@ async function restoreSession() {
 
 async function logout() {
   try {
-    await fetch(`${config.nodeApiUrl}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+    await fetch(`${nodeApiURL}/api/auth/logout`, { method: 'POST', credentials: 'same-origin' });
   } finally {
     elements.results.classList.add('hidden');
     elements['empty-state'].classList.remove('hidden');
