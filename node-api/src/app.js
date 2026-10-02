@@ -10,7 +10,14 @@ const developmentPasswordHash = 'scrypt:c0a2a77c737a14931e9c2c9cae831645:aa61e28
 const jwtSecret = process.env.JWT_SECRET || (isProduction ? '' : 'local-dev-secret-change-me');
 const demoUsername = process.env.AUTH_USERNAME || (isProduction ? '' : 'demo');
 const demoPasswordHash = process.env.AUTH_PASSWORD_HASH || (isProduction ? '' : developmentPasswordHash);
-const frontendOrigin = process.env.FRONTEND_ORIGIN || (isProduction ? '' : 'http://localhost:5173');
+const configuredFrontendOrigins = [process.env.FRONTEND_ORIGIN, process.env.FRONTEND_ORIGINS]
+  .flatMap((value) => typeof value === 'string' ? value.split(',') : [])
+  .map((value) => value.trim())
+  .filter(Boolean);
+const frontendOrigin = configuredFrontendOrigins[0] || (isProduction ? '' : 'http://localhost:5173');
+const allowedOrigins = new Set(configuredFrontendOrigins.length ? configuredFrontendOrigins : [frontendOrigin]);
+allowedOrigins.add('http://localhost:5173');
+allowedOrigins.add('http://127.0.0.1:5173');
 const cookieSecure = process.env.COOKIE_SECURE === 'true';
 const cookieOptions = { httpOnly: true, secure: cookieSecure, sameSite: 'strict', maxAge: 60 * 60 * 1000, path: '/' };
 
@@ -25,7 +32,10 @@ if (isProduction && (Buffer.byteLength(jwtSecret) < 32 || !demoUsername || demoU
 // Cabeceras seguras; CORS solo permite el origen configurado y solicitudes con cookie.
 app.use(helmet());
 app.use((request, response, next) => {
-  response.setHeader('Access-Control-Allow-Origin', frontendOrigin);
+  const requestOrigin = request.get('origin');
+  const originToAllow = requestOrigin && allowedOrigins.has(requestOrigin) ? requestOrigin : frontendOrigin;
+
+  response.setHeader('Access-Control-Allow-Origin', originToAllow || '*');
   response.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
   response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   response.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -48,9 +58,12 @@ app.get('/health', (_request, response) => {
 
 function requireTrustedOrigin(request, response, next) {
   const origin = request.get('origin');
-  if ((isProduction && origin !== frontendOrigin) || (origin && origin !== frontendOrigin)) {
+
+  if (!origin) return next();
+  if (!allowedOrigins.has(origin)) {
     return response.status(403).json({ error: 'origen de solicitud no permitido' });
   }
+
   return next();
 }
 

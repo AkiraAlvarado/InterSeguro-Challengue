@@ -61,3 +61,5 @@ envVarGroups:
       # Si Render asigna otro hostname, actualiza esta variable en el grupo.
       - key: FRONTEND_ORIGIN
         value: https://interseguro-challengue-ui.onrender.com
+      - key: FRONTEND_ORIGINS
+        value: https://interseguro-challengue-ui.onrender.com

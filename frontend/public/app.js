@@ -64,6 +64,20 @@ function showResults(data) {
   elements['result-badge'].classList.add('is-ready');
 }
 
+async function readJsonResponse(response, fallbackMessage) {
+  const text = await response.text();
+  if (!text.trim()) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+      throw new Error('El servicio está arrancando o respondió con una página HTML. Intenta de nuevo en unos segundos.');
+    }
+    throw new Error(fallbackMessage);
+  }
+}
+
 async function login() {
   // La API escribe el JWT en una cookie HttpOnly; JavaScript nunca recibe ni persiste el token.
   const response = await fetch(`${nodeApiURL}/api/auth/token`, {
@@ -71,8 +85,8 @@ async function login() {
     body: JSON.stringify({ username: elements.username.value.trim(), password: elements.password.value }),
     credentials: 'include',
   });
-  const body = await response.json();
-  if (!response.ok) throw new Error(body.error ?? 'No se pudo iniciar sesión.');
+  const body = await readJsonResponse(response, 'No se pudo iniciar sesión.');
+  if (!response.ok) throw new Error(body?.error ?? 'No se pudo iniciar sesión.');
   setAuthenticated(true);
 }
 
@@ -94,12 +108,12 @@ async function analyze(matrix) {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
       body: JSON.stringify({ matrix }),
     });
-    const body = await response.json();
+    const body = await readJsonResponse(response, 'No se pudo procesar la matriz.');
     if (response.status === 401) {
       setAuthenticated(false, 'Sesión vencida');
       return analyze(matrix);
     }
-    if (!response.ok) throw new Error(body.details ?? body.error ?? 'No se pudo procesar la matriz.');
+    if (!response.ok) throw new Error(body?.details ?? body?.error ?? 'No se pudo procesar la matriz.');
     showResults(body);
   } catch (error) {
     elements['matrix-error'].textContent = error.message.includes('fetch') ? 'No se pudo conectar con los servicios. Comprueba que Docker siga activo.' : error.message;
