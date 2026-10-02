@@ -72,7 +72,7 @@ async function readJsonResponse(response, fallbackMessage) {
     return JSON.parse(text);
   } catch {
     if (text.includes('<!DOCTYPE') || text.includes('<html')) {
-      throw new Error('El servicio está arrancando o respondió con una página HTML. Intenta de nuevo en unos segundos.');
+      throw new Error('El servidor puede estar arrancando. En el plan gratuito de Render, este proceso puede tardar hasta 5 minutos. Espera y vuelve a intentarlo.');
     }
     throw new Error(fallbackMessage);
   }
@@ -195,7 +195,9 @@ elements['login-form'].addEventListener('submit', async (event) => {
       await analyze(matrix);
     }
   } catch (error) {
-    elements['login-error'].textContent = error.message;
+    elements['login-error'].textContent = error instanceof TypeError
+      ? 'No se pudo conectar con el servidor. Si acaba de activarse, el plan gratuito de Render puede tardar hasta 5 minutos en arrancar; espera y vuelve a intentarlo.'
+      : error.message;
   } finally {
     submitButton.disabled = false;
   }
